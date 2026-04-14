@@ -1,0 +1,168 @@
+# CMS API — ejemplos para la extensión REST Client (VS Code / Cursor)
+# Atajo: enviar petición bajo el cursor → Ctrl+Alt+R (Windows) / Cmd+Alt+R (macOS)
+#
+# Tras POST /api/auth/login, copia access_token en @token (o usa entornos en settings.json).
+
+@baseUrl = http://localhost:5000/api
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OWQ0NWU2ZGYzZGNlNjAzNjczNmFkYjYiLCJlbWFpbCI6ImRlbW9AZXhhbXBsZS5jb20iLCJyb2xlcyI6WyJVU0VSIl0sImlhdCI6MTc3NTUyNTUwMywiZXhwIjoxNzc2MTMwMzAzfQ.QZ1bppRpyRDmChDWuYILNKCBzkeM7nIjJvT9He9yZcc
+@contentId = reemplaza_con_id_mongo_tras_crear
+@messageId = reemplaza_con_id_mongo_tras_contacto
+
+#############################################
+# Raíz y documentación
+#############################################
+
+### Health (AppController con prefijo global → GET /api)
+GET {{baseUrl}}
+
+### OpenAPI JSON (Swagger; importar en Postman, Insomnia, etc.)
+GET http://localhost:3000/api/docs-json
+
+### Swagger UI en el navegador: http://localhost:3000/api/docs
+
+#############################################
+# Auth (público)
+#############################################
+
+### Registro (rol USER)
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "email": "demo@example.com",
+  "password": "password123",
+  "firstName": "Demo",
+  "lastName": "User"
+}
+
+### Login — respuesta incluye access_token
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "demo@example.com",
+  "password": "password123"
+}
+
+#############################################
+# Usuario autenticado (JWT)
+#############################################
+
+### Perfil actual
+GET {{baseUrl}}/users/me
+Authorization: Bearer {{token}}
+
+### Actualizar perfil
+PATCH {{baseUrl}}/users/me
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "firstName": "Demo",
+  "lastName": "Actualizado",
+  "sections": ["blog"]
+}
+
+### Cambiar contraseña
+POST {{baseUrl}}/users/me/password
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "currentPassword": "password123",
+  "newPassword": "nuevaPassword123"
+}
+
+### Listar todos los usuarios (solo ADMIN)
+GET {{baseUrl}}/users
+Authorization: Bearer {{token}}
+
+#############################################
+# Contenido (JWT; author/ownerEmail desde token al crear)
+#############################################
+
+### Crear contenido
+POST {{baseUrl}}/content
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "title": "Mi primer artículo",
+  "body": "Texto del cuerpo.",
+  "type": "Post",
+  "status": "DRAFT",
+  "keywords": ["cms", "api"],
+  "links": [],
+  "refs": []
+}
+
+### Listar con paginación y filtros
+GET {{baseUrl}}/content?page=1&limit=10&type=Post&status=PUBLISHED&search=artículo
+Authorization: Bearer {{token}}
+
+### Obtener por id
+GET {{baseUrl}}/content/{{contentId}}
+Authorization: Bearer {{token}}
+
+### Actualizar
+PATCH {{baseUrl}}/content/{{contentId}}
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "title": "Título editado",
+  "status": "PUBLISHED"
+}
+
+### Eliminar
+DELETE {{baseUrl}}/content/{{contentId}}
+Authorization: Bearer {{token}}
+
+#############################################
+# Settings
+#############################################
+
+### Lectura pública por clave (sin JWT)
+GET {{baseUrl}}/settings/public/site_title
+
+### Listar todas (solo ADMIN)
+GET {{baseUrl}}/settings
+Authorization: Bearer {{token}}
+
+### Upsert (ADMIN) — PUT o POST
+PUT {{baseUrl}}/settings
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "key": "site_title",
+  "value": "Mi CMS"
+}
+
+### Eliminar por clave (ADMIN)
+DELETE {{baseUrl}}/settings/site_title
+Authorization: Bearer {{token}}
+
+#############################################
+# Mensajes de contacto
+#############################################
+
+### Enviar mensaje (público)
+POST {{baseUrl}}/messages
+Content-Type: application/json
+
+{
+  "name": "Visitante",
+  "email": "visitante@example.com",
+  "message": "Hola, quisiera más información.",
+  "phone": "+34 600 000 000",
+  "businessName": "Mi negocio"
+}
+
+### Listar mensajes (solo ADMIN)
+GET {{baseUrl}}/messages?page=1&limit=20
+Authorization: Bearer {{token}}
+
+### Eliminar mensaje (solo ADMIN)
+DELETE {{baseUrl}}/messages/{{messageId}}
+Authorization: Bearer {{token}}
