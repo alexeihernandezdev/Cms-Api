@@ -20,6 +20,14 @@ export class CreateContentDto {
   @MaxLength(200000)
   body?: string;
 
+  @ApiPropertyOptional({
+    description: 'Resumen o meta descripción del contenido',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(5000)
+  description?: string;
+
   @ApiProperty({ enum: ContentType })
   @IsEnum(ContentType)
   type: ContentType;

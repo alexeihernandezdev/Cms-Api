@@ -244,7 +244,7 @@
             "name": "search",
             "required": false,
             "in": "query",
-            "description": "Busca en título y palabras clave (insensible a mayúsculas)",
+            "description": "Busca en título, descripción y palabras clave (insensible a mayúsculas)",
             "schema": {
               "type": "string"
             }
@@ -359,25 +359,23 @@
         ]
       }
     },
-    "/settings/public/{key}": {
+    "/settings/public": {
       "get": {
         "operationId": "SettingsController_findPublic",
-        "parameters": [
-          {
-            "name": "key",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
+        "parameters": [],
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SiteSettingsResponseDto"
+                }
+              }
+            }
           }
         },
-        "summary": "Leer valor por clave (sin autenticación)",
+        "summary": "Configuración del sitio (sin autenticación)",
         "tags": [
           "settings"
         ]
@@ -385,11 +383,18 @@
     },
     "/settings": {
       "get": {
-        "operationId": "SettingsController_findAll",
+        "operationId": "SettingsController_findOne",
         "parameters": [],
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SiteSettingsResponseDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -397,7 +402,7 @@
             "bearer": []
           }
         ],
-        "summary": "Listar todas (ADMIN)",
+        "summary": "Configuración del sitio (ADMIN)",
         "tags": [
           "settings"
         ]
@@ -410,79 +415,29 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/UpsertSettingDto"
+                "$ref": "#/components/schemas/UpdateSiteSettingsDto"
               }
             }
           }
         },
         "responses": {
           "200": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Crear o actualizar por clave (ADMIN)",
-        "tags": [
-          "settings"
-        ]
-      },
-      "post": {
-        "operationId": "SettingsController_create",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpsertSettingDto"
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SiteSettingsResponseDto"
+                }
               }
             }
           }
         },
-        "responses": {
-          "201": {
-            "description": ""
-          }
-        },
         "security": [
           {
             "bearer": []
           }
         ],
-        "summary": "Alias POST para upsert (ADMIN)",
-        "tags": [
-          "settings"
-        ]
-      }
-    },
-    "/settings/{key}": {
-      "delete": {
-        "operationId": "SettingsController_remove",
-        "parameters": [
-          {
-            "name": "key",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Eliminar por clave (ADMIN)",
+        "summary": "Actualizar configuración del sitio (ADMIN)",
         "tags": [
           "settings"
         ]
@@ -715,6 +670,10 @@
           "body": {
             "type": "string"
           },
+          "description": {
+            "type": "string",
+            "description": "Resumen o meta descripción del contenido"
+          },
           "type": {
             "type": "string",
             "enum": [
@@ -762,6 +721,10 @@
           "body": {
             "type": "string"
           },
+          "description": {
+            "type": "string",
+            "description": "Resumen o meta descripción del contenido"
+          },
           "type": {
             "type": "string",
             "enum": [
@@ -796,20 +759,100 @@
           }
         }
       },
-      "UpsertSettingDto": {
+      "CreateUserDto": {
         "type": "object",
         "properties": {
-          "key": {
-            "type": "string"
+          "email": { "type": "string" },
+          "password": { "type": "string" },
+          "firstName": { "type": "string" },
+          "lastName": { "type": "string" },
+          "roles": {
+            "type": "array",
+            "items": { "type": "string", "enum": ["USER", "ADMIN"] }
           },
-          "value": {
-            "type": "string"
+          "sections": { "type": "array", "items": { "type": "string" } }
+        },
+        "required": ["email", "password"]
+      },
+      "WebsiteDataDto": {
+        "type": "object",
+        "properties": {
+          "title": { "type": "string" },
+          "description": { "type": "string" }
+        }
+      },
+      "ContactInfoDto": {
+        "type": "object",
+        "properties": {
+          "email": { "type": "string" },
+          "phone": { "type": "string" },
+          "address": { "type": "string" }
+        }
+      },
+      "SocialNetworksDto": {
+        "type": "object",
+        "properties": {
+          "facebook": { "type": "string" },
+          "twitter": { "type": "string" },
+          "instagram": { "type": "string" },
+          "linkedin": { "type": "string" }
+        }
+      },
+      "UpdateSiteSettingsDto": {
+        "type": "object",
+        "properties": {
+          "websiteData": {
+            "$ref": "#/components/schemas/WebsiteDataDto"
+          },
+          "contactInfo": {
+            "$ref": "#/components/schemas/ContactInfoDto"
+          },
+          "socialNetworks": {
+            "$ref": "#/components/schemas/SocialNetworksDto"
+          }
+        }
+      },
+      "WebsiteDataResponseDto": {
+        "type": "object",
+        "properties": {
+          "title": { "type": "string" },
+          "description": { "type": "string" }
+        },
+        "required": ["title", "description"]
+      },
+      "ContactInfoResponseDto": {
+        "type": "object",
+        "properties": {
+          "email": { "type": "string" },
+          "phone": { "type": "string" },
+          "address": { "type": "string" }
+        },
+        "required": ["email", "phone", "address"]
+      },
+      "SocialNetworksResponseDto": {
+        "type": "object",
+        "properties": {
+          "facebook": { "type": "string" },
+          "twitter": { "type": "string" },
+          "instagram": { "type": "string" },
+          "linkedin": { "type": "string" }
+        },
+        "required": ["facebook", "twitter", "instagram", "linkedin"]
+      },
+      "SiteSettingsResponseDto": {
+        "type": "object",
+        "properties": {
+          "websiteData": {
+            "$ref": "#/components/schemas/WebsiteDataResponseDto"
+          },
+          "contactInfo": {
+            "$ref": "#/components/schemas/ContactInfoResponseDto"
+          },
+          "socialNetworks": {
+            "$ref": "#/components/schemas/SocialNetworksResponseDto"
           }
         },
-        "required": [
-          "key",
-          "value"
-        ]
+        "required": ["websiteData", "contactInfo", "socialNetworks"]
       },
       "CreateMessageDto": {
         "type": "object",

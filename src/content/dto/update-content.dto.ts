@@ -21,6 +21,14 @@ export class UpdateContentDto {
   @MaxLength(200000)
   body?: string;
 
+  @ApiPropertyOptional({
+    description: 'Resumen o meta descripción del contenido',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(5000)
+  description?: string;
+
   @ApiPropertyOptional({ enum: ContentType })
   @IsOptional()
   @IsEnum(ContentType)

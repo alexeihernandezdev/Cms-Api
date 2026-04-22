@@ -38,7 +38,8 @@ export class QueryContentDto {
   type?: ContentType;
 
   @ApiPropertyOptional({
-    description: 'Busca en título y palabras clave (insensible a mayúsculas)',
+    description:
+      'Busca en título, descripción y palabras clave (insensible a mayúsculas)',
   })
   @IsOptional()
   @IsString()

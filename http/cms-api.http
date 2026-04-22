@@ -92,10 +92,11 @@ Authorization: Bearer {{token}}
 {
   "title": "Mi primer artículo",
   "body": "Texto del cuerpo.",
+  "description": "Resumen breve para listados y SEO.",
   "type": "Post",
   "status": "DRAFT",
   "keywords": ["cms", "api"],
-  "links": [],
+  "links": ["https://example.com/recurso"],
   "refs": []
 }
 
@@ -122,29 +123,38 @@ DELETE {{baseUrl}}/content/{{contentId}}
 Authorization: Bearer {{token}}
 
 #############################################
-# Settings
+# Settings (singleton sitio)
 #############################################
 
-### Lectura pública por clave (sin JWT)
-GET {{baseUrl}}/settings/public/site_title
+### Lectura pública (sin JWT)
+GET {{baseUrl}}/settings/public
 
-### Listar todas (solo ADMIN)
+### Obtener configuración (solo ADMIN)
 GET {{baseUrl}}/settings
 Authorization: Bearer {{token}}
 
-### Upsert (ADMIN) — PUT o POST
+### Actualizar configuración (ADMIN)
 PUT {{baseUrl}}/settings
 Content-Type: application/json
 Authorization: Bearer {{token}}
 
 {
-  "key": "site_title",
-  "value": "Mi CMS"
+  "websiteData": {
+    "title": "Mi CMS",
+    "description": "Descripción breve"
+  },
+  "contactInfo": {
+    "email": "contacto@ejemplo.com",
+    "phone": "+34 600 000 000",
+    "address": "Calle 123"
+  },
+  "socialNetworks": {
+    "facebook": "",
+    "twitter": "",
+    "instagram": "",
+    "linkedin": ""
+  }
 }
-
-### Eliminar por clave (ADMIN)
-DELETE {{baseUrl}}/settings/site_title
-Authorization: Bearer {{token}}
 
 #############################################
 # Mensajes de contacto

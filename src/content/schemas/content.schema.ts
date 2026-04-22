@@ -22,6 +22,9 @@ export class Content {
   @Prop({ default: '' })
   body: string;
 
+  @Prop({ default: '', trim: true })
+  description: string;
+
   @Prop({
     type: String,
     enum: Object.values(ContentType),

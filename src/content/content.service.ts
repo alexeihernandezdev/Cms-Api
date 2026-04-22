@@ -30,6 +30,7 @@ export class ContentService {
     const doc = new this.contentModel({
       title: dto.title,
       body: dto.body ?? '',
+      description: dto.description ?? '',
       type: dto.type,
       status: dto.status ?? undefined,
       author: new Types.ObjectId(user.id),
@@ -63,6 +64,7 @@ export class ContentService {
         $or: [
           { title: new RegExp(safe, 'i') },
           { keywords: new RegExp(safe, 'i') },
+          { description: new RegExp(safe, 'i') },
         ],
       });
     }

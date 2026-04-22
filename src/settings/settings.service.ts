@@ -1,42 +1,117 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { UpsertSettingDto } from './dto/upsert-setting.dto';
-import { Setting, SettingDocument } from './schemas/setting.schema';
+import { UpdateSiteSettingsDto } from './dto/update-site-settings.dto';
+import {
+  SiteSettings,
+  SiteSettingsDocument,
+} from './schemas/site-settings.schema';
+
+export type SiteSettingsPayload = {
+  websiteData: {
+    title: string;
+    description: string;
+  };
+  contactInfo: {
+    email: string;
+    phone: string;
+    address: string;
+  };
+  socialNetworks: {
+    facebook: string;
+    twitter: string;
+    instagram: string;
+    linkedin: string;
+  };
+};
+
+const DEFAULTS: SiteSettingsPayload = {
+  websiteData: {
+    title: '',
+    description: '',
+  },
+  contactInfo: {
+    email: '',
+    phone: '',
+    address: '',
+  },
+  socialNetworks: {
+    facebook: '',
+    twitter: '',
+    instagram: '',
+    linkedin: '',
+  },
+};
 
 @Injectable()
 export class SettingsService {
   constructor(
-    @InjectModel(Setting.name) private settingModel: Model<SettingDocument>,
+    @InjectModel(SiteSettings.name)
+    private readonly siteSettingsModel: Model<SiteSettingsDocument>,
   ) {}
 
-  async findByKeyPublic(key: string) {
-    const doc = await this.settingModel.findOne({ key: key.trim() }).lean();
-    if (!doc) {
-      throw new NotFoundException('Configuración no encontrada');
+  async get(): Promise<SiteSettingsPayload> {
+    const doc = await this.siteSettingsModel.findOne().lean();
+    return this.toPayload(doc);
+  }
+
+  async upsert(dto: UpdateSiteSettingsDto): Promise<SiteSettingsPayload> {
+    const current = await this.siteSettingsModel.findOne().lean();
+    const base = this.toPayload(current);
+    const merged = mergePatch(base, dto);
+    const saved = await this.siteSettingsModel.findOneAndUpdate(
+      {},
+      merged,
+      { upsert: true, new: true },
+    );
+    return this.toPayload(saved.toObject());
+  }
+
+  private toPayload(
+    doc: Record<string, unknown> | SiteSettings | null | undefined,
+  ): SiteSettingsPayload {
+    if (!doc || typeof doc !== 'object') {
+      return structuredClone(DEFAULTS);
     }
-    return { key: doc.key, value: doc.value };
+    const w = doc['websiteData'] as Record<string, string> | undefined;
+    const c = doc['contactInfo'] as Record<string, string> | undefined;
+    const s = doc['socialNetworks'] as Record<string, string> | undefined;
+    return {
+      websiteData: {
+        title: w?.title ?? '',
+        description: w?.description ?? '',
+      },
+      contactInfo: {
+        email: c?.email ?? '',
+        phone: c?.phone ?? '',
+        address: c?.address ?? '',
+      },
+      socialNetworks: {
+        facebook: s?.facebook ?? '',
+        twitter: s?.twitter ?? '',
+        instagram: s?.instagram ?? '',
+        linkedin: s?.linkedin ?? '',
+      },
+    };
   }
+}
 
-  async findAll() {
-    return this.settingModel.find().sort({ key: 1 }).lean();
-  }
-
-  async upsert(dto: UpsertSettingDto) {
-    return this.settingModel
-      .findOneAndUpdate(
-        { key: dto.key.trim() },
-        { value: dto.value },
-        { upsert: true, new: true },
-      )
-      .lean();
-  }
-
-  async remove(key: string) {
-    const res = await this.settingModel.findOneAndDelete({ key: key.trim() });
-    if (!res) {
-      throw new NotFoundException('Configuración no encontrada');
-    }
-    return { ok: true };
-  }
+function mergePatch(
+  base: SiteSettingsPayload,
+  dto: UpdateSiteSettingsDto,
+): SiteSettingsPayload {
+  return {
+    websiteData: {
+      ...base.websiteData,
+      ...(dto.websiteData ?? {}),
+    },
+    contactInfo: {
+      ...base.contactInfo,
+      ...(dto.contactInfo ?? {}),
+    },
+    socialNetworks: {
+      ...base.socialNetworks,
+      ...(dto.socialNetworks ?? {}),
+    },
+  };
 }
