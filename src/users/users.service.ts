@@ -15,6 +15,10 @@ import { User, UserDocument } from './schemas/user.schema';
 export class UsersService {
   constructor(@InjectModel(User.name) private userModel: Model<UserDocument>) {}
 
+  async countDocuments(): Promise<number> {
+    return this.userModel.countDocuments().exec();
+  }
+
   async create(data: {
     email: string;
     password: string;

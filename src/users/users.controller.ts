@@ -6,6 +6,7 @@ import { Role } from '../common/enums/role.enum';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import type { JwtUser } from '../common/interfaces/jwt-user.interface';
+import { CreateUserDto } from './dto/create-user.dto';
 import { UpdatePasswordDto, UpdateProfileDto } from './dto/update-profile.dto';
 import { UsersService } from './users.service';
 
@@ -42,6 +43,25 @@ export class UsersController {
   ) {
     await this.usersService.updatePassword(user.id, dto);
     return { ok: true };
+  }
+
+  @Post()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
+  @ApiOperation({ summary: 'Crear usuario (DESDE ADMIN)' })
+  async create(@Body() dto: CreateUserDto) {
+    const roles = dto.roles && dto.roles.length > 0 ? dto.roles : [Role.USER];
+    const user = await this.usersService.create({
+      email: dto.email,
+      password: dto.password,
+      roles,
+      profile: {
+        firstName: dto.firstName,
+        lastName: dto.lastName,
+      },
+      sections: dto.sections ?? [],
+    });
+    return this.usersService.sanitize(user);
   }
 
   @Get()

@@ -94,6 +94,34 @@
       }
     },
     "/users": {
+      "post": {
+        "operationId": "UsersController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateUserDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Crear usuario (ADMIN)",
+        "tags": [
+          "users"
+        ]
+      },
       "get": {
         "operationId": "UsersController_list",
         "parameters": [],
@@ -110,31 +138,6 @@
         "summary": "Listar usuarios (ADMIN)",
         "tags": [
           "users"
-        ]
-      }
-    },
-    "/auth/register": {
-      "post": {
-        "operationId": "AuthController_register",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/RegisterDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": ""
-          }
-        },
-        "summary": "Registro (rol USER)",
-        "tags": [
-          "auth"
         ]
       }
     },
@@ -557,6 +560,43 @@
       }
     },
     "/messages/{id}": {
+      "patch": {
+        "operationId": "MessagesController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateMessageDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Actualizar mensaje (ADMIN), p. ej. marcar leído",
+        "tags": [
+          "messages"
+        ]
+      },
       "delete": {
         "operationId": "MessagesController_remove",
         "parameters": [
@@ -795,6 +835,15 @@
           "email",
           "message"
         ]
+      },
+      "UpdateMessageDto": {
+        "type": "object",
+        "properties": {
+          "read": {
+            "type": "boolean",
+            "description": "Marcar mensaje como leído o no leído"
+          }
+        }
       }
     }
   }

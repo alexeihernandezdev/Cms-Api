@@ -1,7 +1,7 @@
 # CMS API — ejemplos para la extensión REST Client (VS Code / Cursor)
 # Atajo: enviar petición bajo el cursor → Ctrl+Alt+R (Windows) / Cmd+Alt+R (macOS)
 #
-# Tras POST /api/auth/login, copia access_token en @token (o usa entornos en settings.json).
+# Tras POST /api/auth/login (usuario ADMIN), copia access_token en @token (o usa entornos en settings.json).
 
 @baseUrl = http://localhost:5000/api
 @token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OWQ0NWU2ZGYzZGNlNjAzNjczNmFkYjYiLCJlbWFpbCI6ImRlbW9AZXhhbXBsZS5jb20iLCJyb2xlcyI6WyJVU0VSIl0sImlhdCI6MTc3NTUyNTUwMywiZXhwIjoxNzc2MTMwMzAzfQ.QZ1bppRpyRDmChDWuYILNKCBzkeM7nIjJvT9He9yZcc
@@ -24,18 +24,7 @@ GET http://localhost:3000/api/docs-json
 # Auth (público)
 #############################################
 
-### Registro (rol USER)
-POST {{baseUrl}}/auth/register
-Content-Type: application/json
-
-{
-  "email": "demo@example.com",
-  "password": "password123",
-  "firstName": "Demo",
-  "lastName": "User"
-}
-
-### Login — respuesta incluye access_token
+### Login — respuesta incluye access_token (crear primer admin con SEED_ADMIN_* en .env si la BD está vacía)
 POST {{baseUrl}}/auth/login
 Content-Type: application/json
 
@@ -71,6 +60,20 @@ Authorization: Bearer {{token}}
 {
   "currentPassword": "password123",
   "newPassword": "nuevaPassword123"
+}
+
+### Crear usuario (solo ADMIN; reemplaza @token por JWT de administrador)
+POST {{baseUrl}}/users
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "email": "nuevo@example.com",
+  "password": "password123",
+  "firstName": "Nuevo",
+  "lastName": "Usuario",
+  "roles": ["USER"],
+  "sections": ["blog"]
 }
 
 ### Listar todos los usuarios (solo ADMIN)
@@ -162,6 +165,15 @@ Content-Type: application/json
 ### Listar mensajes (solo ADMIN)
 GET {{baseUrl}}/messages?page=1&limit=20
 Authorization: Bearer {{token}}
+
+### Marcar mensaje como leído (solo ADMIN)
+PATCH {{baseUrl}}/messages/{{messageId}}
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "read": true
+}
 
 ### Eliminar mensaje (solo ADMIN)
 DELETE {{baseUrl}}/messages/{{messageId}}

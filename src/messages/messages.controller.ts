@@ -4,6 +4,7 @@ import {
   Delete,
   Get,
   Param,
+  Patch,
   Post,
   Query,
   UseGuards,
@@ -15,6 +16,7 @@ import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { CreateMessageDto } from './dto/create-message.dto';
 import { QueryMessagesDto } from './dto/query-messages.dto';
+import { UpdateMessageDto } from './dto/update-message.dto';
 import { MessagesService } from './messages.service';
 
 @ApiTags('messages')
@@ -35,6 +37,15 @@ export class MessagesController {
   @ApiOperation({ summary: 'Listar mensajes (ADMIN)' })
   findAll(@Query() query: QueryMessagesDto) {
     return this.messagesService.findMany(query);
+  }
+
+  @Patch(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Actualizar mensaje (ADMIN), p. ej. marcar leído' })
+  update(@Param('id') id: string, @Body() dto: UpdateMessageDto) {
+    return this.messagesService.update(id, dto);
   }
 
   @Delete(':id')

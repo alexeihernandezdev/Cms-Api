@@ -12,7 +12,7 @@
 
 Cada recurso debe vivir en su propio módulo:
 /src
-  /auth               # Login, Registro, Estrategia JWT
+  /auth               # Login, Estrategia JWT
   /users              # Gestión de usuarios y perfiles
   /content            # CRUD de contenidos (Posts/Artículos)
   /common             # Guards (Roles), Interceptors, Decoradores
@@ -67,7 +67,7 @@ Cada recurso debe vivir en su propio módulo:
 ### Convenciones implementadas (API)
 
 - Prefijo global de rutas: **`/api`**. Documentación Swagger: **`/api/docs`**. Autenticación: **Bearer JWT** (`Authorization: Bearer <token>`).
-- **Registro** (`POST /api/auth/register`) crea usuarios con rol **USER**. El rol **ADMIN** se asigna actualizando el documento en MongoDB (p. ej. `roles: ['ADMIN']`) o flujo futuro de provisión.
+- **Sin registro público.** El primer administrador se crea al arrancar si la BD no tiene usuarios y existen `SEED_ADMIN_EMAIL` y `SEED_ADMIN_PASSWORD` en el entorno. Altas posteriores: **`POST /api/users`** con JWT de rol **ADMIN** (`CreateUserDto`: email, password, opcional roles, sections, nombre).
 - **Contenido:** al crear, `author` y `ownerEmail` se toman del usuario del JWT (no del body). Listados y CRUD aplican filtro por autor/correo para USER; ADMIN sin filtro de alcance.
 - **Settings:** lectura pública por clave en `GET /api/settings/public/:key`; gestión (lista, upsert, delete) solo **ADMIN**.
 - **Messages:** envío público `POST /api/messages`; listado y borrado solo **ADMIN**.
@@ -83,7 +83,7 @@ Cada recurso debe vivir en su propio módulo:
 ### **Hito 2: Auth & Seguridad**
 
 - [x] 2.1 Módulo de Usuarios y Hash de contraseñas.
-- [x] 2.2 Endpoint de Registro y Login con JWT.
+- [x] 2.2 Login con JWT; alta de usuarios por ADMIN o semilla inicial (`SEED_ADMIN_*`).
 - [x] 2.3 `JwtAuthGuard` para protección de rutas.
 - [x] 2.4 `RolesGuard` y Decorador `@Roles()`.
 

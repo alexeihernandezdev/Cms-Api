@@ -6,8 +6,10 @@ import * as fs from 'fs';
 async function generate() {
   const app = await NestFactory.create(AppModule);
   const config = new DocumentBuilder()
-    .setTitle('Mi API')
+    .setTitle('CMS API')
+    .setDescription('API del CMS (NestJS + MongoDB)')
     .setVersion('1.0')
+    .addBearerAuth()
     .build();
 
   const document = SwaggerModule.createDocument(app, config);

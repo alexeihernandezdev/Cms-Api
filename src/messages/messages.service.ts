@@ -1,8 +1,13 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { CreateMessageDto } from './dto/create-message.dto';
 import { QueryMessagesDto } from './dto/query-messages.dto';
+import { UpdateMessageDto } from './dto/update-message.dto';
 import { Message, MessageDocument } from './schemas/message.schema';
 
 @Injectable()
@@ -18,6 +23,7 @@ export class MessagesService {
       message: dto.message,
       phone: dto.phone ?? '',
       businessName: dto.businessName ?? '',
+      read: false,
     });
     return doc.save();
   }
@@ -43,6 +49,25 @@ export class MessagesService {
       data: items,
       meta: { page, limit, total, totalPages: Math.ceil(total / limit) || 1 },
     };
+  }
+
+  async update(id: string, dto: UpdateMessageDto) {
+    const updates: Record<string, unknown> = {};
+    if (dto.read !== undefined) {
+      updates.read = dto.read;
+    }
+    if (Object.keys(updates).length === 0) {
+      throw new BadRequestException('Debe enviar al menos un campo válido');
+    }
+    const res = await this.messageModel.findByIdAndUpdate(
+      id,
+      { $set: updates },
+      { new: true, lean: true },
+    );
+    if (!res) {
+      throw new NotFoundException('Mensaje no encontrado');
+    }
+    return res;
   }
 
   async remove(id: string) {

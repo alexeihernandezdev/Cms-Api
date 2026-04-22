@@ -19,6 +19,9 @@ export class Message {
 
   @Prop({ default: '' })
   businessName: string;
+
+  @Prop({ default: false })
+  read: boolean;
 }
 
 export const MessageSchema = SchemaFactory.createForClass(Message);
